@@ -90,7 +90,6 @@ export function Footer() {
     <footer className="w-full bg-[#14532D] text-white border-t border-emerald-900/60 mt-auto">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
-          {/* Section 1: Brand Information */}
           <div className="space-y-4">
             <Link href="/" className="inline-flex items-center gap-2.5 group">
               <div className="flex size-9 items-center justify-center rounded-xl bg-white text-[#14532D] shadow-xs transition-transform group-hover:scale-105">
@@ -108,7 +107,6 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Section 2: Quick Links */}
           <div className="space-y-4">
             <h3 className="font-heading text-base font-semibold text-white tracking-wide">
               Quick Links
@@ -127,7 +125,6 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Section 3: Community */}
           <div className="space-y-4">
             <h3 className="font-heading text-base font-semibold text-white tracking-wide">
               Community
@@ -150,7 +147,6 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Section 4: Social Media */}
           <div className="space-y-4">
             <h3 className="font-heading text-base font-semibold text-white tracking-wide">
               Connect With Us
@@ -178,7 +174,6 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Footer Bottom Bar */}
         <div className="mt-14 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/70">
           <p>
             &copy; {currentYear} TogetherWeCare. All rights reserved.
