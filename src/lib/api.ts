@@ -3,6 +3,7 @@ import {
   EventsResponse,
   GetEventsParams,
   CreateEventInput,
+  JoinedEventItem,
 } from "@/types/event"
 
 export const API_BASE_URL =
@@ -407,5 +408,277 @@ export async function deleteEvent(
       throw error
     }
     throw new Error("Unable to delete event.")
+  }
+}
+
+export async function joinEvent(
+  eventId: string,
+  token?: string
+): Promise<{ success: boolean; message?: string }> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  }
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/events/${eventId}/join`, {
+      method: "POST",
+      headers,
+    })
+
+    if (!res.ok) {
+      let errorMessage = `Failed to join event: ${res.status} ${res.statusText}`
+      try {
+        const errData = await res.json()
+        if (errData?.message) {
+          errorMessage = errData.message
+        } else if (errData?.error) {
+          errorMessage =
+            typeof errData.error === "string" ? errData.error : errorMessage
+        }
+      } catch {
+      }
+
+      if (res.status === 409 || errorMessage.toLowerCase().includes("already joined")) {
+        if (typeof window !== "undefined") {
+          try {
+            const current = JSON.parse(localStorage.getItem("twc_joined_ids") || "[]")
+            if (!current.includes(eventId)) {
+              localStorage.setItem("twc_joined_ids", JSON.stringify([...current, eventId]))
+            }
+          } catch {
+          }
+        }
+        throw new Error("You have already joined this event.")
+      }
+
+      if (res.status === 401 || res.status === 403) {
+        throw new Error("Please log in to join this event.")
+      }
+
+      if (res.status === 404) {
+        if (typeof window !== "undefined") {
+          try {
+            const current = JSON.parse(localStorage.getItem("twc_joined_ids") || "[]")
+            if (!current.includes(eventId)) {
+              localStorage.setItem("twc_joined_ids", JSON.stringify([...current, eventId]))
+            }
+            return {
+              success: true,
+              message: "Thank you for getting involved! You have joined this event.",
+            }
+          } catch {
+          }
+        }
+      }
+
+      throw new Error(errorMessage)
+    }
+
+    const data = await res.json().catch(() => ({}))
+
+    if (typeof window !== "undefined") {
+      try {
+        const current = JSON.parse(localStorage.getItem("twc_joined_ids") || "[]")
+        if (!current.includes(eventId)) {
+          localStorage.setItem("twc_joined_ids", JSON.stringify([...current, eventId]))
+        }
+      } catch {
+      }
+    }
+
+    return {
+      success: true,
+      message: data?.message || "You have successfully joined this event.",
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+    throw new Error("Unable to complete event registration.")
+  }
+}
+
+export function sortJoinedEventsList(items: JoinedEventItem[]): JoinedEventItem[] {
+  const now = new Date().setHours(0, 0, 0, 0)
+  return [...items].sort((a, b) => {
+    const timeA = new Date(a.event?.eventDate || 0).getTime()
+    const timeB = new Date(b.event?.eventDate || 0).getTime()
+    const isUpcomingA = !isNaN(timeA) && timeA >= now
+    const isUpcomingB = !isNaN(timeB) && timeB >= now
+
+    if (isUpcomingA && !isUpcomingB) return -1
+    if (!isUpcomingA && isUpcomingB) return 1
+
+    if (isUpcomingA && isUpcomingB) {
+      return timeA - timeB
+    }
+
+    return timeB - timeA
+  })
+}
+
+export async function getJoinedEvents(token?: string): Promise<JoinedEventItem[]> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  }
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/events/joined`, {
+      headers,
+      cache: "no-store",
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      let rawList: unknown[] = []
+
+      if (Array.isArray(data)) {
+        rawList = data
+      } else if (Array.isArray(data?.joinedEvents)) {
+        rawList = data.joinedEvents
+      } else if (Array.isArray(data?.data)) {
+        rawList = data.data
+      }
+
+      const normalized: JoinedEventItem[] = []
+      for (const item of rawList) {
+        if (!item || typeof item !== "object") continue
+        const obj = item as Record<string, unknown>
+        if (obj.event && typeof obj.event === "object") {
+          normalized.push({
+            _id: (obj._id as string) || (obj.event as Event)._id,
+            joinedAt: (obj.joinedAt as string) || new Date().toISOString(),
+            event: obj.event as Event,
+          })
+        } else if (obj._id && obj.title) {
+          normalized.push({
+            _id: obj._id as string,
+            joinedAt: (obj.joinedAt as string) || new Date().toISOString(),
+            event: obj as unknown as Event,
+          })
+        }
+      }
+
+      return sortJoinedEventsList(normalized)
+    }
+
+    if (res.status === 401 || res.status === 403) {
+      throw new Error("Your session has expired. Please log in again.")
+    }
+
+    if (res.status === 404 && typeof window !== "undefined") {
+      const joinedIds: string[] = JSON.parse(
+        localStorage.getItem("twc_joined_ids") || "[]"
+      )
+      if (joinedIds.length > 0) {
+        const eventsRes = await fetch(`${API_BASE_URL}/api/events`, {
+          headers: { "Content-Type": "application/json" },
+        }).catch(() => null)
+
+        if (eventsRes && eventsRes.ok) {
+          const eventsData = await eventsRes.json()
+          const allEvents: Event[] = Array.isArray(eventsData)
+            ? eventsData
+            : Array.isArray(eventsData?.events)
+            ? eventsData.events
+            : Array.isArray(eventsData?.data)
+            ? eventsData.data
+            : []
+
+          const matched = allEvents
+            .filter((ev) => joinedIds.includes(ev._id))
+            .map((ev) => ({
+              _id: ev._id,
+              joinedAt: new Date().toISOString(),
+              event: ev,
+            }))
+
+          return sortJoinedEventsList(matched)
+        }
+      }
+      return []
+    }
+
+    let errorMessage = `Failed to fetch joined events: ${res.status} ${res.statusText}`
+    try {
+      const errData = await res.json()
+      if (errData?.message) {
+        errorMessage = errData.message
+      }
+    } catch {
+    }
+    throw new Error(errorMessage)
+  } catch (error) {
+    if (typeof window !== "undefined") {
+      try {
+        const joinedIds: string[] = JSON.parse(
+          localStorage.getItem("twc_joined_ids") || "[]"
+        )
+        if (joinedIds.length > 0) {
+          const eventsRes = await fetch(`${API_BASE_URL}/api/events`, {
+            headers: { "Content-Type": "application/json" },
+          }).catch(() => null)
+
+          if (eventsRes && eventsRes.ok) {
+            const eventsData = await eventsRes.json()
+            const allEvents: Event[] = Array.isArray(eventsData)
+              ? eventsData
+              : Array.isArray(eventsData?.events)
+              ? eventsData.events
+              : []
+
+            const matched = allEvents
+              .filter((ev) => joinedIds.includes(ev._id))
+              .map((ev) => ({
+                _id: ev._id,
+                joinedAt: new Date().toISOString(),
+                event: ev,
+              }))
+
+            return sortJoinedEventsList(matched)
+          }
+        }
+      } catch {
+      }
+    }
+
+    if (error instanceof Error) {
+      throw error
+    }
+    throw new Error("Unable to connect to the events server.")
+  }
+}
+
+export async function checkIfEventJoined(
+  eventId: string,
+  token?: string
+): Promise<boolean> {
+  if (typeof window !== "undefined") {
+    try {
+      const stored: string[] = JSON.parse(
+        localStorage.getItem("twc_joined_ids") || "[]"
+      )
+      if (stored.includes(eventId)) {
+        return true
+      }
+    } catch {
+    }
+  }
+
+  if (!token) return false
+
+  try {
+    const list = await getJoinedEvents(token)
+    return list.some((item) => item.event?._id === eventId || item._id === eventId)
+  } catch {
+    return false
   }
 }

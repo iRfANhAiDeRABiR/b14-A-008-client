@@ -13,6 +13,7 @@ export interface EventCardProps {
   event: Event
   className?: string
   actions?: React.ReactNode
+  extraBadge?: React.ReactNode
 }
 
 function getBadgeVariant(eventType: string) {
@@ -31,7 +32,7 @@ function formatDate(dateInput: string | Date | undefined): string {
   return isValid(date) ? format(date, "MMMM d, yyyy") : "Date to be announced"
 }
 
-export function EventCard({ event, className, actions }: EventCardProps) {
+export function EventCard({ event, className, actions, extraBadge }: EventCardProps) {
   const badgeVariant = getBadgeVariant(event.eventType)
   const formattedDate = formatDate(event.eventDate)
 
@@ -56,6 +57,11 @@ export function EventCard({ event, className, actions }: EventCardProps) {
               {event.eventType}
             </Badge>
           </div>
+          {extraBadge && (
+            <div className="absolute top-3 right-3 z-10">
+              {extraBadge}
+            </div>
+          )}
         </div>
 
         <CardHeader className="p-5 pb-3 space-y-2">

@@ -56,3 +56,9 @@ export interface GetEventsParams {
   page?: number
   limit?: number
 }
+
+export interface JoinedEventItem {
+  _id?: string
+  joinedAt?: string | Date
+  event: Event
+}

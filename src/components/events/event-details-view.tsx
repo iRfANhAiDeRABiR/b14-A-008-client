@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { format, isValid } from "date-fns"
 import { toast } from "sonner"
 import {
@@ -24,7 +25,9 @@ import {
   Check,
 } from "lucide-react"
 import { Event, EventOrganizer } from "@/types/event"
-import { getEventById } from "@/lib/api"
+import { getEventById, joinEvent, checkIfEventJoined } from "@/lib/api"
+import { authClient } from "@/lib/auth-client"
+import { getTokenFromClient } from "@/lib/getTokenFromClient"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -131,6 +134,8 @@ function EventDetailsSkeleton() {
 }
 
 export function EventDetailsView({ id }: EventDetailsViewProps) {
+  const router = useRouter()
+  const { data: session } = authClient.useSession()
   const [event, setEvent] = React.useState<Event | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [notFound, setNotFound] = React.useState(false)
@@ -171,6 +176,28 @@ export function EventDetailsView({ id }: EventDetailsViewProps) {
     }
   }, [id, reloadKey])
 
+  React.useEffect(() => {
+    let isMounted = true
+
+    async function checkStatus() {
+      if (!session?.user) return
+      try {
+        const token = await getTokenFromClient()
+        const joined = await checkIfEventJoined(id, token)
+        if (isMounted && joined) {
+          setHasJoined(true)
+        }
+      } catch {
+      }
+    }
+
+    checkStatus()
+
+    return () => {
+      isMounted = false
+    }
+  }, [id, session?.user])
+
   const handleRetry = () => {
     setLoading(true)
     setError(null)
@@ -178,20 +205,45 @@ export function EventDetailsView({ id }: EventDetailsViewProps) {
     setReloadKey((prev) => prev + 1)
   }
 
-  const handleJoinClick = () => {
+  const handleJoinClick = async () => {
+    if (!session?.user) {
+      router.push(`/login?callbackURL=${encodeURIComponent(`/events/${id}`)}`)
+      return
+    }
+
     if (hasJoined) {
       toast.info("You have already registered to participate in this event.")
       return
     }
 
     setIsJoining(true)
-    setTimeout(() => {
-      setIsJoining(false)
+    try {
+      const token = await getTokenFromClient()
+      const res = await joinEvent(id, token)
       setHasJoined(true)
-      toast.success(
-        "Thank you for getting involved! Your participation interest has been noted. Full authentication will link to your account in an upcoming update."
+      setEvent((prev) =>
+        prev
+          ? {
+              ...prev,
+              joinedCount: (prev.joinedCount || 0) + 1,
+            }
+          : prev
       )
-    }, 600)
+      toast.success(
+        res.message || "Thank you for getting involved! You have joined this event."
+      )
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to join event. Please try again."
+      if (message.toLowerCase().includes("already joined")) {
+        setHasJoined(true)
+        toast.info("You have already joined this event.")
+      } else {
+        toast.error(message)
+      }
+    } finally {
+      setIsJoining(false)
+    }
   }
 
   const handleShare = () => {
@@ -529,23 +581,23 @@ export function EventDetailsView({ id }: EventDetailsViewProps) {
               <div className="space-y-3">
                 <Button
                   onClick={handleJoinClick}
-                  disabled={isJoining}
+                  disabled={isJoining || hasJoined}
                   variant={hasJoined ? "outline" : "default"}
                   className={`w-full h-12 rounded-xl font-semibold gap-2 transition-all ${
                     hasJoined
-                      ? "border-emerald-600/30 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20"
+                      ? "border-emerald-600/30 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20 cursor-not-allowed"
                       : "shadow-xs"
                   }`}
                 >
                   {isJoining ? (
                     <>
                       <RefreshCw className="size-4 animate-spin" />
-                      <span>Registering...</span>
+                      <span>Joining Event...</span>
                     </>
                   ) : hasJoined ? (
                     <>
                       <CheckCircle2 className="size-5 text-emerald-600" />
-                      <span>You Are Registered!</span>
+                      <span>Already Joined</span>
                     </>
                   ) : (
                     <>
@@ -556,7 +608,9 @@ export function EventDetailsView({ id }: EventDetailsViewProps) {
                 </Button>
 
                 <p className="text-[11px] text-center text-muted-foreground leading-normal">
-                  Free and open to the public. Participation tracking will connect with your personal profile in an upcoming release.
+                  {hasJoined
+                    ? "You are registered for this community initiative. View all your registrations on the Joined Events page."
+                    : "Free and open to all volunteers. You must be signed in to join."}
                 </p>
               </div>
 
