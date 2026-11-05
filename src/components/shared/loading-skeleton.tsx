@@ -84,3 +84,56 @@ export function ButtonSkeleton({
   return <Skeleton className={cn("rounded-lg", sizeClasses[size], className)} />
 }
 
+export function ProfileSkeleton() {
+  return (
+    <div className="min-h-screen bg-background py-10 sm:py-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="flex flex-col items-center text-center space-y-3 max-w-2xl mx-auto">
+          <Skeleton className="h-6 w-32 rounded-full" />
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-4 w-96 max-w-full" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          <Skeleton className="h-80 w-full rounded-2xl" />
+          <Skeleton className="lg:col-span-2 h-96 w-full rounded-2xl" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function EventDetailsPageSkeleton() {
+  return (
+    <div className="min-h-screen bg-background py-8 sm:py-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-40" />
+        </div>
+        <Skeleton className="h-72 sm:h-[420px] w-full rounded-2xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="space-y-3">
+              <Skeleton className="h-6 w-24 rounded-full" />
+              <Skeleton className="h-10 w-4/5" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+            <div className="space-y-3 pt-4">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          </div>
+          <div className="space-y-6">
+            <Skeleton className="h-72 w-full rounded-2xl" />
+            <Skeleton className="h-48 w-full rounded-2xl" />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+

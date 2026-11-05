@@ -39,6 +39,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { ThemeToggle } from "@/components/shared/theme-toggle"
 
 export interface NavbarUser {
   name: string
@@ -134,6 +135,7 @@ export function Navbar({ user: initialUser = null, onLogout }: NavbarProps) {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
+          <ThemeToggle />
           {isPending && !user ? (
             <div className="size-9 rounded-full bg-muted/60 animate-pulse" />
           ) : user ? (
@@ -231,6 +233,7 @@ export function Navbar({ user: initialUser = null, onLogout }: NavbarProps) {
         </div>
 
         <div className="flex md:hidden items-center gap-2">
+          <ThemeToggle />
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger
               render={
