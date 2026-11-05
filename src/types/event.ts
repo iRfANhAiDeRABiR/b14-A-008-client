@@ -19,3 +19,23 @@ export interface Event {
   joinedCount?: number
 }
 
+export interface EventPagination {
+  currentPage: number
+  totalPages: number
+  totalEvents: number
+  limit: number
+}
+
+export interface EventsResponse {
+  events: Event[]
+  pagination: EventPagination
+}
+
+export interface GetEventsParams {
+  search?: string
+  eventType?: string
+  location?: string
+  sort?: "nearest" | "latest" | string
+  page?: number
+  limit?: number
+}
