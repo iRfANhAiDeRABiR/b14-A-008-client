@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 const searchFields = [
@@ -33,19 +34,19 @@ export function Banner() {
           with our curated travel experiences.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <a
+          <Link
             href="/destinations"
             className="flex items-center gap-3 bg-[#00A8E8] px-7 py-3.5 text-sm font-semibold tracking-widest text-white uppercase transition-colors hover:bg-[#0095d1]"
           >
             Explore Now
             <ArrowRight className="size-4" />
-          </a>
-          <a
+          </Link>
+          <Link
             href="/destinations"
             className="bg-white/30 px-7 py-3.5 text-sm font-semibold tracking-widest text-white uppercase backdrop-blur-sm transition-colors hover:bg-white/40"
           >
             View Destination
-          </a>
+          </Link>
         </div>
       </div>
 

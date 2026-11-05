@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 export function Cta() {
@@ -22,13 +23,13 @@ export function Cta() {
         <p className="mt-4 text-base text-white/90">
           Join thousands of travelers who have discovered the world with us
         </p>
-        <a
+        <Link
           href="/destinations"
           className="mt-10 flex items-center gap-3 bg-white px-8 py-4 text-sm font-semibold tracking-widest text-foreground uppercase transition-colors hover:bg-white/90"
         >
           Book Your Trip Today
           <ArrowRight className="size-4" />
-        </a>
+        </Link>
       </div>
     </section>
   );
