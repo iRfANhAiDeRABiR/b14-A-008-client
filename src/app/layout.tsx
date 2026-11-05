@@ -1,11 +1,20 @@
 import type { Metadata } from "next";
-import { Josefin_Sans } from "next/font/google";
+import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 
-const josefinSans = Josefin_Sans({
+const inter = Inter({
   subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -20,8 +29,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${josefinSans.className} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
+    <html
+      lang="en"
+      className={`${inter.variable} ${poppins.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col font-sans">
         <Navbar />
         {children}
         <Footer />
