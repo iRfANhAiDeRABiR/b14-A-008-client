@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Navbar } from "@/components/layout/navbar"
 import {
   Card,
   CardContent,
@@ -261,6 +262,29 @@ export default function Home() {
               description="There are currently no community service events matching your selected criteria. Try adjusting your filters or create a new event."
               actionLabel="Explore All Events"
               actionHref="/upcoming-events"
+            />
+          </div>
+        </Container>
+      </SectionWrapper>
+
+      {/* 6. Navbar Demonstration */}
+      <SectionWrapper variant="card">
+        <Container>
+          <SectionHeading
+            badge="Navigation Component"
+            title="Navbar State Preview"
+            subtitle="The global navbar at the top displays the logged-out state. Below is an interactive preview of the Navbar in authenticated state."
+            className="mb-8"
+          />
+          <div className="rounded-xl border border-border shadow-xs overflow-hidden bg-background">
+            <div className="bg-muted/50 px-4 py-2 text-xs font-mono text-muted-foreground border-b border-border">
+              Preview: Authenticated User State (user=&quot;Ayesha Rahman&quot;)
+            </div>
+            <Navbar
+              user={{
+                name: "Ayesha Rahman",
+                email: "ayesha@togetherwecare.org",
+              }}
             />
           </div>
         </Container>
