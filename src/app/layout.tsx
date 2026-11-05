@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/footer";
+import { Footer } from "@/components/layout/footer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -35,7 +35,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-sans">
         <Navbar />
-        {children}
+        <main className="flex-1">
+          {children}
+        </main>
         <Footer />
       </body>
     </html>
