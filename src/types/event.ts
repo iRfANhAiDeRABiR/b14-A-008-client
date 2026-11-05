@@ -27,6 +27,15 @@ export interface Event {
   status?: string
 }
 
+export interface CreateEventInput {
+  title: string
+  description: string
+  eventType: EventCategory | string
+  imageUrl: string
+  location: string
+  eventDate: string
+}
+
 export interface EventPagination {
   currentPage: number
   totalPages: number

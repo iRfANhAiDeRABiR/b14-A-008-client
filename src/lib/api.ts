@@ -1,4 +1,9 @@
-import { Event, EventsResponse, GetEventsParams } from "@/types/event"
+import {
+  Event,
+  EventsResponse,
+  GetEventsParams,
+  CreateEventInput,
+} from "@/types/event"
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
@@ -213,6 +218,50 @@ export async function getEventById(id: string): Promise<Event | null> {
     }
 
     return null
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+    throw new Error("Unable to connect to the events server.")
+  }
+}
+
+export async function createEvent(
+  eventData: CreateEventInput,
+  token?: string
+): Promise<Event> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  }
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/events`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(eventData),
+    })
+
+    if (!res.ok) {
+      let errorMessage = `Failed to create event: ${res.status} ${res.statusText}`
+      try {
+        const errData = await res.json()
+        if (errData?.message) {
+          errorMessage = errData.message
+        } else if (errData?.error) {
+          errorMessage =
+            typeof errData.error === "string" ? errData.error : errorMessage
+        }
+      } catch {
+      }
+      throw new Error(errorMessage)
+    }
+
+    const data = await res.json()
+    return data?.event || data?.data || data
   } catch (error) {
     if (error instanceof Error) {
       throw error
