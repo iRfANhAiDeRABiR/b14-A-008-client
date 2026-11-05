@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   HeartHandshake,
   Menu,
@@ -12,6 +12,8 @@ import {
   BookmarkCheck,
   LogOut,
 } from "lucide-react"
+import { toast } from "sonner"
+import { authClient } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -49,9 +51,36 @@ export interface NavbarProps {
   onLogout?: () => void
 }
 
-export function Navbar({ user = null, onLogout }: NavbarProps) {
+export function Navbar({ user: initialUser = null, onLogout }: NavbarProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const [mobileOpen, setMobileOpen] = React.useState(false)
+
+  const { data: session, isPending } = authClient.useSession()
+
+  const user = session?.user
+    ? {
+        name: session.user.name,
+        email: session.user.email,
+        image: session.user.image,
+      }
+    : initialUser
+
+  const handleLogout = async () => {
+    if (onLogout) {
+      onLogout()
+      return
+    }
+
+    try {
+      await authClient.signOut()
+      toast.success("Logged out successfully.")
+      router.push("/")
+      router.refresh()
+    } catch {
+      toast.error("Failed to log out. Please try again.")
+    }
+  }
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -105,7 +134,9 @@ export function Navbar({ user = null, onLogout }: NavbarProps) {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
-          {user ? (
+          {isPending && !user ? (
+            <div className="size-9 rounded-full bg-muted/60 animate-pulse" />
+          ) : user ? (
             <DropdownMenu>
               <TooltipProvider delay={150}>
                 <Tooltip>
@@ -173,7 +204,7 @@ export function Navbar({ user = null, onLogout }: NavbarProps) {
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={onLogout}
+                  onClick={handleLogout}
                   className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer flex items-center gap-2"
                 >
                   <LogOut className="size-4" />
@@ -306,7 +337,7 @@ export function Navbar({ user = null, onLogout }: NavbarProps) {
                     className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive flex items-center justify-center gap-2"
                     onClick={() => {
                       setMobileOpen(false)
-                      onLogout?.()
+                      handleLogout()
                     }}
                   >
                     <LogOut className="size-4" />
@@ -338,4 +369,3 @@ export function Navbar({ user = null, onLogout }: NavbarProps) {
     </header>
   )
 }
-

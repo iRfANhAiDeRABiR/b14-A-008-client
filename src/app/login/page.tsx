@@ -44,7 +44,13 @@ function GitHubIcon({ className }: { className?: string }) {
 
 function getSafeRedirectUrl(url: string | null): string {
   if (!url) return "/"
-  if (url.startsWith("/") && !url.startsWith("//") && !url.startsWith("/\\")) {
+  if (
+    url.startsWith("/") &&
+    !url.startsWith("//") &&
+    !url.startsWith("/\\") &&
+    !url.startsWith("/login") &&
+    !url.startsWith("/register")
+  ) {
     return url
   }
   return "/"
@@ -54,7 +60,9 @@ function LoginFormContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const returnUrl = getSafeRedirectUrl(
-    searchParams.get("callbackUrl") || searchParams.get("returnUrl")
+    searchParams.get("callbackURL") ||
+    searchParams.get("callbackUrl") ||
+    searchParams.get("returnUrl")
   )
 
   const [showPassword, setShowPassword] = React.useState(false)
