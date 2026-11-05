@@ -269,3 +269,143 @@ export async function createEvent(
     throw new Error("Unable to connect to the events server.")
   }
 }
+
+export async function getMyEvents(token?: string): Promise<Event[]> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  }
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/events/my-events`, {
+      headers,
+      cache: "no-store",
+    })
+
+    if (!res.ok) {
+      let errorMessage = `Failed to fetch events: ${res.status} ${res.statusText}`
+      try {
+        const errData = await res.json()
+        if (errData?.message) {
+          errorMessage = errData.message
+        } else if (errData?.error) {
+          errorMessage =
+            typeof errData.error === "string" ? errData.error : errorMessage
+        }
+      } catch {
+      }
+      throw new Error(errorMessage)
+    }
+
+    const data = await res.json()
+    let list: Event[] = []
+
+    if (Array.isArray(data)) {
+      list = data
+    } else if (Array.isArray(data?.events)) {
+      list = data.events
+    } else if (Array.isArray(data?.data)) {
+      list = data.data
+    }
+
+    return list.sort(
+      (a, b) =>
+        new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
+    )
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+    throw new Error("Unable to connect to the events server.")
+  }
+}
+
+export async function updateEvent(
+  id: string,
+  eventData: Partial<CreateEventInput>,
+  token?: string
+): Promise<Event> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  }
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/events/${id}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify(eventData),
+    })
+
+    if (!res.ok) {
+      let errorMessage = `Failed to update event: ${res.status} ${res.statusText}`
+      try {
+        const errData = await res.json()
+        if (errData?.message) {
+          errorMessage = errData.message
+        } else if (errData?.error) {
+          errorMessage =
+            typeof errData.error === "string" ? errData.error : errorMessage
+        }
+      } catch {
+      }
+      throw new Error(errorMessage)
+    }
+
+    const data = await res.json()
+    return data?.event || data?.data || data
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+    throw new Error("Unable to update event.")
+  }
+}
+
+export async function deleteEvent(
+  id: string,
+  token?: string
+): Promise<{ success: boolean }> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  }
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/events/${id}`, {
+      method: "DELETE",
+      headers,
+    })
+
+    if (!res.ok) {
+      let errorMessage = `Failed to delete event: ${res.status} ${res.statusText}`
+      try {
+        const errData = await res.json()
+        if (errData?.message) {
+          errorMessage = errData.message
+        } else if (errData?.error) {
+          errorMessage =
+            typeof errData.error === "string" ? errData.error : errorMessage
+        }
+      } catch {
+      }
+      throw new Error(errorMessage)
+    }
+
+    return { success: true }
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+    throw new Error("Unable to delete event.")
+  }
+}
