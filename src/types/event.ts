@@ -6,6 +6,13 @@ export type EventCategory =
   | "Healthcare"
   | "Other"
 
+export interface EventOrganizer {
+  userId?: string
+  name?: string
+  email?: string
+  image?: string
+}
+
 export interface Event {
   _id: string
   title: string
@@ -14,9 +21,10 @@ export interface Event {
   imageUrl: string
   location: string
   eventDate: string | Date
-  createdBy?: string
+  createdBy?: string | EventOrganizer
   createdAt?: string | Date
   joinedCount?: number
+  status?: string
 }
 
 export interface EventPagination {

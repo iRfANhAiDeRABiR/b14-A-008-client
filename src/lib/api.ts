@@ -176,3 +176,47 @@ export async function getEvents(
     throw new Error("Unable to connect to the events server.")
   }
 }
+
+export async function getEventById(id: string): Promise<Event | null> {
+  if (!id || typeof id !== "string") {
+    return null
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/events/${id}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    })
+
+    if (res.status === 404) {
+      return null
+    }
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch event: ${res.status} ${res.statusText}`)
+    }
+
+    const data = await res.json()
+
+    if (data && typeof data === "object") {
+      if (data.event) {
+        return data.event
+      }
+      if (data.data) {
+        return data.data
+      }
+      if (data._id) {
+        return data
+      }
+    }
+
+    return null
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+    throw new Error("Unable to connect to the events server.")
+  }
+}
