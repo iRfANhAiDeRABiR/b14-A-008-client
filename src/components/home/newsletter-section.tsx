@@ -58,7 +58,7 @@ export function NewsletterSection() {
               className="flex flex-col sm:flex-row items-center gap-3 max-w-lg mx-auto w-full"
             >
               <div className="relative w-full">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-emerald-200">
+                <div className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-4 text-emerald-200">
                   <Mail className="size-4" />
                 </div>
                 <input
@@ -66,7 +66,7 @@ export function NewsletterSection() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email address"
-                  className="h-12 w-full rounded-xl border border-white/20 bg-white/10 pl-11 pr-4 text-sm text-white placeholder:text-emerald-200/70 outline-none backdrop-blur-xs transition-colors focus:border-white focus:bg-white/15"
+                  className="h-12 w-full rounded-xl border border-white/20 bg-white/10 pl-11 pr-4 text-sm text-white placeholder:text-emerald-200/70 outline-none transition-colors focus:border-white focus:bg-white/15"
                 />
               </div>
               <Button
