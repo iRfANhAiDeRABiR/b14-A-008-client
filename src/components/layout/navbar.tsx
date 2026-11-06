@@ -175,16 +175,18 @@ export function Navbar({ user: initialUser = null, onLogout }: NavbarProps) {
               </TooltipProvider>
 
               <DropdownMenuContent align="end" className="w-56 p-1.5">
-                <DropdownMenuLabel className="font-normal px-2 py-1.5">
-                  <div className="flex flex-col space-y-0.5">
-                    <p className="text-sm font-semibold font-heading text-foreground">
-                      {user.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {user.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="font-normal px-2 py-1.5">
+                    <div className="flex flex-col space-y-0.5">
+                      <p className="text-sm font-semibold font-heading text-foreground">
+                        {user.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem render={<Link href="/profile" className="flex w-full items-center gap-2 cursor-pointer" />}>
